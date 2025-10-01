@@ -28,7 +28,7 @@ class StoryResponse(BaseModel):
 @router.post("/process-hiring-thread/{story_id}")
 async def test_process_hiring_thread(story_id: int):
     """Test endpoint to run the complete cron workflow"""
-    from cron_service import HNCronService
+    from services.cron_service import HNCronService
 
     cron_service = HNCronService()
 
@@ -69,7 +69,7 @@ async def get_jobs(month: Optional[str] = None):
         elif "-" not in month:
             try:
                 month_enum = Month[month.upper()]  # "september" -> Month.SEPTEMBER
-                month = f"{current_year}-{month_enum.value:02d}"  # -> "2025-09"
+                month = f"{current_year}-{month_enum.value}"  # -> "2025-09"
             except KeyError:
                 return {
                     "success": False,
@@ -122,7 +122,7 @@ async def get_comments(story_id: int):
 @router.post("/process-comments")
 async def process_pending_comments():
     """Dedicated endpoint for Claude processing of all pending comments"""
-    from processing_service import ClaudeProcessingService
+    from services.processing_service import ClaudeProcessingService
 
     processing_service = ClaudeProcessingService()
 
@@ -142,7 +142,7 @@ async def process_pending_comments():
 @router.post("/process-comment/{hn_id}")
 async def process_single_comment(hn_id: int):
     """Process a specific comment by HN ID"""
-    from processing_service import ClaudeProcessingService
+    from services.processing_service import ClaudeProcessingService
 
     processing_service = ClaudeProcessingService()
 
