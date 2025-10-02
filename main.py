@@ -31,7 +31,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # Local development
-        "https://hn-frontend-pi.vercel.app"  # Production frontend
+        "https://curatedhire.dev",  # Production domain
+        "https://www.curatedhire.dev"  # Production domain with www
     ],
     allow_credentials=True,
     allow_methods=["*"],
