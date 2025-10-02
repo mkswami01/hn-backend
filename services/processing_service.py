@@ -5,8 +5,6 @@ from anthropic import Anthropic
 from pydantic import BaseModel, ValidationError
 import json
 import os
-from bs4 import BeautifulSoup
-from sqlalchemy import Boolean, false
 from models.hn_models import OpenAIProcessData
 
 from database.db_layer import HNDatabase, DatabaseError
