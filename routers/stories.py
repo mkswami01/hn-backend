@@ -58,33 +58,57 @@ async def get_jobs(month: Optional[str] = None):
     database = HNDatabase()
 
     try:
-        current_year = datetime.now().year
-
         # If no month provided, default to current month
         if not month:
-            current_month = datetime.now().month
-            month = f"{current_year}-{current_month:02d}"  # Format as "2025-09"
+            current_date = datetime.now()
+            month = f"{current_date.month:02d}-{str(current_date.year)[2:]}"  # Format as "12-25"
 
-        # If month is a name (like "september"), convert it
-        elif "-" not in month:
+        # Parse MM-YY format to YYYY-MM format for database query
+        # Expected input: "11-25", "12-25", "01-26"
+        if "-" in month:
             try:
-                month_enum = Month[month.upper()]  # "september" -> Month.SEPTEMBER
-                month = f"{current_year}-{month_enum.value}"  # -> "2025-09"
-            except KeyError:
+                month_part, year_part = month.split("-")
+
+                # Validate format: MM-YY (month must be 2 digits, year must be 2 digits)
+                if len(month_part) != 2 or len(year_part) != 2:
+                    return {
+                        "success": False,
+                        "error": f"Invalid month format: {month}. Expected format: MM-YY (e.g., 11-25, 12-25, 01-26)"
+                    }
+
+                # Validate month is 01-12
+                month_num = int(month_part)
+                if not (1 <= month_num <= 12):
+                    return {
+                        "success": False,
+                        "error": f"Invalid month: {month_part}. Must be between 01 and 12."
+                    }
+
+                # Convert YY to YYYY (assume 20YY for years 00-99)
+                full_year = f"20{year_part}"
+
+                # Convert to database format: "2025-09"
+                db_month_format = f"{full_year}-{month_part}"
+
+            except ValueError:
                 return {
                     "success": False,
-                    "error": f"Invalid month name: {month}"
+                    "error": f"Invalid month format: {month}. Expected format: MM-YY (e.g., 11-25, 12-25, 01-26)"
                 }
+        else:
+            return {
+                "success": False,
+                "error": f"Invalid month format: {month}. Expected format: MM-YY (e.g., 11-25, 12-25, 01-26)"
+            }
 
-        # Otherwise, month is already in "2025-09" format, use as-is
-
-        jobs = database.get_completed_jobs(month)
+        jobs = database.get_completed_jobs(db_month_format)
 
         return {
             "success": True,
             "data": jobs,
             "count": len(jobs),
-            "month": month
+            "month": month,  # Return the original MM-YY format
+            "db_month": db_month_format  # Also show the converted format for clarity
         }
     except Exception as e:
         return {
